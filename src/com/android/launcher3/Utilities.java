@@ -133,6 +133,12 @@ public final class Utilities {
     public static final String GRID_ROWS = "pref_grid_rows";
     public static final String HOTSEAT_ICONS = "pref_hotseat_icons";
 
+    public static final String SHOW_LEFT_TAB_PREFERENCE_KEY = "pref_left_tab";
+
+    public static boolean isShowLeftTab(Context context) {
+        return getPrefs(context).getBoolean(SHOW_LEFT_TAB_PREFERENCE_KEY, false);
+    }
+
     public static boolean isPropertyEnabled(String propertyName) {
         return Log.isLoggable(propertyName, Log.VERBOSE);
     }
@@ -328,6 +334,20 @@ public final class Utilities {
         } else {
             return false;
         }
+    }
+
+    public static boolean isPackageInstalled(Context context, String pkg) {
+        if (pkg != null) {
+            try {
+                PackageInfo pi = context.getPackageManager().getPackageInfo(pkg, 0);
+                if (!pi.applicationInfo.enabled) {
+                    return false;
+                }
+            } catch (PackageManager.NameNotFoundException e) {
+                return false;
+            }
+        }
+         return true;
     }
 
     /*

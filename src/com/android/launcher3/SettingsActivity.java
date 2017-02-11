@@ -42,6 +42,7 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
 import android.preference.Preference.OnPreferenceChangeListener;
+import android.preference.SwitchPreference;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.View;
@@ -163,6 +164,10 @@ public class SettingsActivity extends Activity {
                 }
             });
 
+            SwitchPreference leftTabPage = (SwitchPreference) findPreference(Utilities.SHOW_LEFT_TAB_PREFERENCE_KEY);
+            if (!isSearchInstalled()) {
+                getPreferenceScreen().removePreference(leftTabPage);
+            }
 
             final ListPreference gridColumns = (ListPreference) findPreference(Utilities.GRID_COLUMNS);
             gridColumns.setSummary(gridColumns.getEntry());
@@ -274,6 +279,10 @@ public class SettingsActivity extends Activity {
             } else {
                 return null;
             }
+        }
+
+        private boolean isSearchInstalled() {
+            return Utilities.isPackageInstalled(getActivity(), LauncherTab.SEARCH_PACKAGE);
         }
     }
 

@@ -249,6 +249,9 @@ public class Launcher extends BaseDraggingActivity implements LauncherExterns,
 
     private RotationHelper mRotationHelper;
 
+    private LauncherTab mLauncherTab;
+    private boolean mLauncherTabEnabled;
+
 
     private final Handler mHandler = new Handler();
     private final Runnable mLogOnDelayedResume = this::logOnDelayedResume;
@@ -337,6 +340,9 @@ public class Launcher extends BaseDraggingActivity implements LauncherExterns,
 
         setContentView(mLauncherView);
         getRootView().dispatchInsets();
+
+        mLauncherTabEnabled = isLauncherTabEnabled();
+        mLauncherTab = new LauncherTab(this, mLauncherTabEnabled);
 
         // Listen for broadcasts
         registerReceiver(mScreenOffReceiver, new IntentFilter(Intent.ACTION_SCREEN_OFF));
@@ -790,6 +796,10 @@ public class Launcher extends BaseDraggingActivity implements LauncherExterns,
         // Refresh shortcuts if the permission changed.
         mModel.refreshShortcutsIfRequired();
 
+        if (mLauncherTabEnabled) {
+            mLauncherTab.getClient().onResume();
+        }
+
         DiscoveryBounce.showForHomeIfNeeded(this);
         if (mLauncherCallbacks != null) {
             mLauncherCallbacks.onResume();
@@ -807,6 +817,10 @@ public class Launcher extends BaseDraggingActivity implements LauncherExterns,
         super.onPause();
         mDragController.cancelDrag();
         mDragController.resetLastGestureUpTime();
+
+        if (mLauncherTabEnabled) {
+            mLauncherTab.getClient().onPause();
+        }
 
         if (mLauncherCallbacks != null) {
             mLauncherCallbacks.onPause();
@@ -1130,6 +1144,10 @@ public class Launcher extends BaseDraggingActivity implements LauncherExterns,
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
 
+        if (mLauncherTabEnabled) {
+            mLauncherTab.getClient().onAttachedToWindow();
+        }
+
         FirstFrameAnimatorHelper.initializeDrawListener(getWindow().getDecorView());
         if (mLauncherCallbacks != null) {
             mLauncherCallbacks.onAttachedToWindow();
@@ -1139,6 +1157,10 @@ public class Launcher extends BaseDraggingActivity implements LauncherExterns,
     @Override
     public void onDetachedFromWindow() {
         super.onDetachedFromWindow();
+
+        if (mLauncherTabEnabled) {
+            mLauncherTab.getClient().onDetachedFromWindow();
+        }
 
         if (mLauncherCallbacks != null) {
             mLauncherCallbacks.onDetachedFromWindow();
@@ -1152,6 +1174,10 @@ public class Launcher extends BaseDraggingActivity implements LauncherExterns,
     @Override
     public LauncherRootView getRootView() {
         return (LauncherRootView) mLauncherView;
+    }
+
+    private boolean isLauncherTabEnabled() {
+        return Utilities.isShowLeftTab(this);
     }
 
     @Override
@@ -1260,6 +1286,10 @@ public class Launcher extends BaseDraggingActivity implements LauncherExterns,
                 UiThreadHelper.hideKeyboardAsync(this, v.getWindowToken());
             }
 
+            if (mLauncherTabEnabled) {
+                mLauncherTab.getClient().hideOverlay(true);
+            }
+
             if (mLauncherCallbacks != null) {
                 mLauncherCallbacks.onHomeIntent(internalStateHandled);
             }
@@ -1340,6 +1370,10 @@ public class Launcher extends BaseDraggingActivity implements LauncherExterns,
         LauncherAnimUtils.onDestroyActivity();
 
         clearPendingBinds();
+
+        if (mLauncherTabEnabled) {
+            mLauncherTab.getClient().onDestroy();
+        }
 
         if (mLauncherCallbacks != null) {
             mLauncherCallbacks.onDestroy();
@@ -2436,6 +2470,17 @@ public class Launcher extends BaseDraggingActivity implements LauncherExterns,
             if (themeStyle != mThemeStyle) {
                 mThemeStyle = themeStyle;
                 recreate();
+            }
+        }
+        if (Utilities.SHOW_LEFT_TAB_PREFERENCE_KEY.equals(key)) {
+            if (mLauncherTab != null) {
+                mLauncherTabEnabled = isLauncherTabEnabled();
+                mLauncherTab.updateLauncherTab(mLauncherTabEnabled);
+                if (!mLauncherTabEnabled) {
+                    mLauncherTab.getClient().onDestroy();
+                } else {
+                    mLauncherTab.getClient().onAttachedToWindow();
+                }
             }
         }
     }
