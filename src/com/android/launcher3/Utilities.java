@@ -133,6 +133,8 @@ public final class Utilities {
     public static final String GRID_ROWS = "pref_grid_rows";
     public static final String HOTSEAT_ICONS = "pref_hotseat_icons";
 
+    public static final String SHOW_SEARCH_BAR_PREFERENCE_KEY = "pref_searchBar";
+
     public static boolean isPropertyEnabled(String propertyName) {
         return Log.isLoggable(propertyName, Log.VERBOSE);
     }
@@ -161,6 +163,10 @@ public final class Utilities {
         } catch (Exception e) {
             return preferenceFallback;
         }
+    }
+
+    public static boolean isShowSearchBar(Context context) {
+        return getPrefs(context).getBoolean(SHOW_SEARCH_BAR_PREFERENCE_KEY, true);
     }
 
     /**
